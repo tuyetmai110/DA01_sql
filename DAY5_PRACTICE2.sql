@@ -7,6 +7,10 @@ WHERE ID%2=0
 ---EX2 Find the difference between the total number of CITY entries in the table and the number of distinct CITY entries in the table.
 SELECT count(CITY)-COUNT( DISTINCT CITY) FROM STATION
 
+---3XX3 
+select CEILING(avg(salary)-avg(replace(salary, '0', '')) )
+from EMPLOYEES
+
 ---ex4 datalemur-alibaba-compressed-mean.
 SELECT 
 ROUND(CAST(SUM(item_count*order_occurrences)/sum(order_occurrences) AS DECIMAL),1) 
