@@ -142,3 +142,36 @@ where address.address not in(
 )
 
 
+/* Question 7:
+Topic: JOIN & GROUP BY
+Task: Danh sách các thành phố và doanh thu tương ừng trên từng thành phố 
+Question:Thành phố nào đạt doanh thu cao nhất?
+Answer: Cape Coral : 221.55*/
+select d.city, sum(a.amount) 
+from payment as a 
+join customer as b on a.customer_id=b.customer_id
+join address as c on c.address_id=b.address_id
+join city as d on d.city_id=c.city_id
+	group by d.city
+	order by sum(a.amount)  desc
+
+
+/* Question 8:
+Topic: JOIN & GROUP BY
+Task: Tạo danh sách trả ra 2 cột dữ liệu: 
+-cột 1: thông tin thành phố và đất nước ( format: “city, country")
+-cột 2: doanh thu tương ứng với cột 1
+Question: thành phố của đất nước nào đat doanh thu cao nhất
+Answer: United States, Tallahassee : 50.85.  */
+SELECT d.city || ', ' || e.country AS thanhpho_datnuoc,
+    SUM(a.amount) AS doanhthu
+FROM payment AS a
+JOIN customer AS b ON a.customer_id = b.customer_id
+JOIN address AS c ON c.address_id = b.address_id
+JOIN city AS d ON d.city_id = c.city_id
+JOIN country AS e ON d.country_id = e.country_id
+GROUP BY d.city, e.country
+ORDER BY 
+    doanhthu DESC
+LIMIT 1
+
