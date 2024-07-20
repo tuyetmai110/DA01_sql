@@ -5,6 +5,18 @@ from
 FROM job_listings GROUP BY company_id	,title,description ) as job_count
 where job_count>1
 
+---ex2  https://datalemur.com/questions/sql-highest-grossing
+with cte as(
+select category,product, SUM(spend) as total_spent , 
+rank() over(
+partition by category order by SUM(spend) desc) as ranking
+from product_spend
+WHERE EXTRACT(YEAR FROM transaction_date) = 2022
+group by category,product)
+
+select category,product,total_spent from cte where ranking<=2
+order by category,ranking 
+
 
 ---ex3: Patient Support Analysis  https://datalemur.com/questions/frequent-callers
 select count(policy_holder_id) as policy_holder_count from
