@@ -27,7 +27,23 @@ from cte
 where a=3
 
 ---ex4 
-
+WITH cte AS (
+  SELECT 
+    transaction_date, 
+    user_id, 
+    product_id, 
+    RANK() OVER (
+      PARTITION BY user_id 
+      ORDER BY transaction_date DESC) AS transaction_rank 
+  FROM user_transactions) 
+SELECT 
+  transaction_date, 
+  user_id,
+  COUNT(product_id) AS purchase_count
+FROM cte
+WHERE transaction_rank = 1 
+GROUP BY transaction_date, user_id
+ORDER BY transaction_date;
 
 
 ---ex5 https://datalemur.com/questions/rolling-average-tweets 
@@ -46,5 +62,34 @@ select count(merchant_id) as dem
 from cte
 where diff<=10
 
----ex7 
+---ex7  https://datalemur.com/questions/sql-highest-grossing Highest-Grossing Items
+select category,product,total_spend 
+from(
+select category,product,
+sum(spend) as total_spend, 
+rank()over(partition by category order by sum(spend) DESC ) as ranking
+from product_spend 
+WHERE EXTRACT(YEAR FROM transaction_date) = 2022
+GROUP BY category, product) as t
+where ranking<=2
+
+---ex8
+with cte as(
+SELECT a.artist_name,
+dense_rank () over(order by count(b.song_id) desc) as artist_rank
+from artists a
+join songs b on a.artist_id=b.artist_id
+join global_song_rank c on c.song_id=b.song_id
+where c.rank<=10
+group by a.artist_name)
+
+select artist_name, artist_rank
+from cte
+where artist_rank<=5
+
+
+
+
+
+
 
