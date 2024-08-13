@@ -19,15 +19,34 @@ WHERE shipped_at BETWEEN '2019-01-01' AND '2022-04-30'
 GROUP BY  month_year
 ORDER BY  month_year
 
+---3. Nhóm khách hàng theo độ tuổi
+WITH ranked_users AS (
+SELECT  first_name,last_name,gender, age, 'youngest' AS tag,
+RANK() OVER(PARTITION BY gender ORDER BY age ASC) AS rank
+FROM bigquery-public-data.thelook_ecommerce.users
+WHERE  FORMAT_TIMESTAMP('%Y-%m', created_at) BETWEEN '2019-01' AND '2022-04'
+UNION ALL
+  
+SELECT first_name,last_name, gender,age,'oldest' AS tag,
+RANK() OVER(PARTITION BY gender ORDER BY age DESC) AS rank
+FROM bigquery-public-data.thelook_ecommerce.users
+WHERE FORMAT_TIMESTAMP('%Y-%m', created_at) BETWEEN '2019-01' AND '2022-04')
+SELECT * FROM ranked_users WHERE rank = 1
+
+---4.Top 5 sản phẩm mỗi tháng.
 
 
-SELECT 
-  first_name, 
-  last_name, 
-  gender,
-  CASE 
-    WHEN ROW_NUMBER() OVER(PARTITION BY gender ORDER BY age) = 1 THEN 'youngest' 
-    ELSE NULL 
-  END AS tag
-FROM 
-  `bigquery-public-data.thelook_ecommerce.users`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
