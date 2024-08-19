@@ -62,6 +62,33 @@ group by dates,a.category
 order by dates, a.category 
 
 
+III. Tạo metric trước khi dựng dashboard
+
+CREATE VIEW vw_ecommerce_analyst AS
+with cte as (
+select format_timestamp('%Y-%m',a.created_at) as month,
+extract(year from a.created_at ) as year,
+round(sum(b.sale_price),2) as TPV,
+COUNT(b.order_id) AS TPO, 
+c.category as product_category,
+sum(c.cost) as total_cost
+from bigquery-public-data.thelook_ecommerce.orders a
+join bigquery-public-data.thelook_ecommerce.order_items b on a.order_id=b.order_id and a.user_id=b.user_id
+join bigquery-public-data.thelook_ecommerce.products c on b.id=c.id
+where b.status='Shipped'
+group by month,year,c.category 
+order by month )
+
+select month,year,Product_category,TPV,
+lead(TPV) over(partition by month order by month ) as next_month,
+concat(round(100.00*(lead(TPV) over(partition by month order by month )-TPV)/ TPV,2),'%') AS Revenue_growth,
+TPO,
+lead(TPo) over(partition by month order by month ) as next_month_1,
+concat(round(100.00*(lead(TPO) over(partition by month order by month )-TPO)/ TPO,2),'%') AS Order_growth,
+total_cost, TPV-total_cost AS Total_profit,
+TPV/total_cost AS Profit_to_cost_ratio
+FROM CTE
+order by month
 
 
 
