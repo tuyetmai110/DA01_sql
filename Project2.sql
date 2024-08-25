@@ -99,6 +99,44 @@ order by month
 
 
 
+with a as (
+select user_id,round(sale_price,2) as amount ,FORMAT_TIMESTAMP('%Y-%m',created_at) as cohort_month,
+(Extract(year from created_at) - extract(year from min(created_at) over(partition by user_id)))*12 
+  + Extract(MONTH from created_at) - extract(MONTH from min(created_at) over(partition by user_id)) +1
+  as index
+from bigquery-public-data.thelook_ecommerce.order_items
+)
+
+,xxx as(
+select cohort_month, round(sum(amount),2) as revenue, count(distinct user_id) AS cnt ,index
+from a
+group by cohort_month, index
+order by index),
+---CUSTOMER COHORT 
+customer_cohort as (select cohort_month,
+sum(case when index=1 then cnt else 0 end) as m1,
+sum(case when index=2 then cnt else 0 end) as m2,
+sum(case when index=3 then cnt else 0 end )as m3,
+sum(case when index=4 then cnt else 0 end )as m4,
+from xxx
+group by cohort_month)
+--RETENTION COHORT--
+,retention_cohort as(
+Select cohort_month,
+round(100.00* m1/m1,2) || '%' as m1,
+round(100.00* m2/m1,2) || '%' as m2,
+round(100.00* m3/m1,2) || '%' as m3,
+round(100.00* m4/m1,2) || '%' as m4
+from customer_cohort
+)
+---CHURN COHORT
+Select cohort_month,
+(100-round(100.00* m1/m1,2) )|| '%' as m1,
+(100-round(100.00* m2/m1,2)) || '%' as m2,
+(100-round(100.00* m3/m1,2)) || '%' as m3,
+(100-round(100.00* m4/m1,2)) || '%' as m4
+from customer_cohort
+
 
 
 
